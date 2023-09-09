@@ -1,26 +1,13 @@
 from fastapi import FastAPI, Request, Form
 from fastapi.templating import Jinja2Templates
-from xml.etree import ElementTree as ET
 import httpx
+import xml.etree.ElementTree as ET
+import re
 
 app = FastAPI()
 
 # Configure Jinja2 templates
 templates = Jinja2Templates(directory="templates")
-
-# Custom Jinja2 filters
-def parse_xml(value):
-    return ET.fromstring(value)
-
-def extract_result(xml_element):
-    result_element = xml_element.find(".//AddResult")
-    if result_element is not None:
-        return result_element.text
-    else:
-        return "Result not found in SOAP response"
-
-templates.env.filters["parse_xml"] = parse_xml
-templates.env.filters["extract_result"] = extract_result
 
 # Define an endpoint to render the HTML form
 @app.get("/")
@@ -34,10 +21,10 @@ async def calculate(request: Request, intA: int = Form(...), intB: int = Form(..
     soap_request = f"""<?xml version="1.0" encoding="utf-8"?>
     <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/">
         <soap:Body>
-            <tem:Add>
+            <tem:Multiply>
                 <tem:intA>{intA}</tem:intA>
                 <tem:intB>{intB}</tem:intB>
-            </tem:Add>
+            </tem:Multiply>
         </soap:Body>
     </soap:Envelope>
     """
@@ -52,14 +39,28 @@ async def calculate(request: Request, intA: int = Form(...), intB: int = Form(..
     
     # Check if the request was successful
     if response.status_code == 200:
-        # Extract and return the SOAP response as is
+        # Extract and return the result from the SOAP response
         soap_response = response.text
     else:
         # Handle errors here
         soap_response = "SOAP request failed"
+    print(soap_response)
 
-    return templates.TemplateResponse("result.html", {"request": request, "soap_response": soap_response})
+    # Remove the XML declaration
+    cleaned_xml = re.sub(r'<\?xml.*\?>', '', soap_response)
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    # Remove namespaces from elements
+    cleaned_xml = re.sub(r'xmlns="[^"]+"', '', cleaned_xml)
+
+    # Parse the cleaned XML
+    root = ET.fromstring(cleaned_xml)
+
+    # Find the MultiplyResult element and get its text content
+    multiply_result_element = root.find(".//MultiplyResult")
+    if multiply_result_element is not None:
+        multiply_result_text = multiply_result_element.text
+        print("Value extracted from <MultiplyResult>:", multiply_result_text)
+    else:
+        print("MultiplyResult element not found in the XML")
+
+    return templates.TemplateResponse("result.html", {"request": request, "soap_response": multiply_result_text})
