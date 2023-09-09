@@ -5,8 +5,8 @@
 </head>
 <body>
     <h1>SOAP Calculator Result</h1>
-    <p>SOAP Response:</p>
-    <pre>{{ soap_response }}</pre>
+    <p>Result:</p>
+    <p>{{ soap_response | parse_xml | extract_result }}</p>
     <p><a href="/">Go back</a></p>
 </body>
 </html>
