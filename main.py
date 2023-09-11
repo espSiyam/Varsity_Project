@@ -10,7 +10,7 @@ app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
 # Endpoint to render the input form
-# @app.get("/")
+@app.get("/")
 async def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
