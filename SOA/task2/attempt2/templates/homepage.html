@@ -11,6 +11,17 @@
     <div class="container mt-5">
         <h1 class="text-center">Dropbox File Operations</h1>
         <div class="row mt-5">
+            <!-- card for retriving user information from dropbox account -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title">User Account Information</h2>
+                        <p>Name: {{ user_info.name.display_name }}</p>
+                        <p>Email: {{ user_info.email }}</p>
+                        <p>Account ID: {{ user_info.account_id }}</p>
+                    </div>
+                </div>
+            </div>
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-body">

@@ -23,8 +23,7 @@ def get_current_access_token():
     return stored_access_token
 
 # Manually set the access token here
-stored_access_token = "sl.BmWo75-19C_ep35eQ1btSLxytEhHqGJgvNMcJdeGQMAxXjLVM014sYrDC1BhGOlHjN1y3_lGcbX03pd5aHDUSAW6DnpfpWN3gjYmwuFFbJlmqhzxmLFuYvqTwTrY8eGnjlXBJIDqBx9Q7JTiiuGu1TI"
-
+stored_access_token = "sl.BmUioBp2MR-jNOK8aP6fHCpLAznJqXhgyo_EZMmAQqCkAz01UZJjXviw-QZKv-zsRZQf_bAK8-w6mBpP5Xe04jtccb9KlAn2FH2yldtPQYHkPMhQW0SwzdNflSPz3eSIBkDMCELd7LjJjDe3RtMK6yE"
 
 # Jinja2 template environment setup
 templates_env = Environment(loader=FileSystemLoader("templates"))
@@ -45,10 +44,27 @@ def render_template(template_name, **kwargs):
     else:
         raise HTTPException(status_code=500, detail=f"Template {template_name} not found")
 
+# Function to get user account information from Dropbox
+def get_user_account_info():
+    global stored_access_token
+    try:
+        if stored_access_token is None:
+            raise HTTPException(status_code=401, detail="Access token not available. Please set the access token.")
+
+        dbx = dropbox.Dropbox(stored_access_token)
+
+        # Get current account information
+        account_info = dbx.users_get_current_account()
+        return account_info
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve user account information: {str(e)}")
+
+
 # Function to render the homepage
 @app.get("/", response_class=HTMLResponse)
 async def homepage():
-    return render_template("homepage")
+    account_info = get_user_account_info()
+    return render_template("homepage", user_info=account_info)
 
 
 # Function to upload a file to Dropbox
