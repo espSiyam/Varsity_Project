@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dropbox File Operations</title>
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">Dropbox File Operations</h1>
+        <div class="row mt-5">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title">Upload</h2>
+                        <form action="/uploadfile/" method="post" enctype="multipart/form-data">
+                            <div class="form-group">
+                                <label for="file">Choose a File:</label>
+                                <input type="file" class="form-control-file" name="file" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Upload</button>
+                        </form>
+                        <p class="mt-2">{{ upload_message }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title">Copy</h2>
+                        <form action="/copyfile/" method="post">
+                            <div class="form-group">
+                                <label for="source_path">Source Path:</label>
+                                <input type="text" class="form-control" name="source_path" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="destination_path">Destination Path:</label>
+                                <input type="text" class="form-control" name="destination_path" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Copy</button>
+                        </form>
+                        <p class="mt-2">{{ copy_message }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title">Move</h2>
+                        <!-- Inside move.html -->
+                            <form action="/movefile/" method="post">
+                                <div class="form-group">
+                                    <label for="source_path_move">Source Path:</label>
+                                    <input type="text" class="form-control" name="source_path" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="destination_path_move">Destination Path:</label>
+                                    <input type="text" class="form-control" name="destination_path" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Move</button>
+                            </form>
+                        <p class="mt-2">{{ move_message }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title">Rename</h2>
+                            <form action="/renamefile/" method="post">
+                                <div class="form-group">
+                                    <label for="file_path_rename">File Path:</label>
+                                    <input type="text" class="form-control" name="file_path" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="new_name">New Name:</label>
+                                    <input type="text" class="form-control" name="new_name" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Rename</button>
+                            </form>
+                        <p class="mt-2">{{ rename_message }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title">Delete</h2>
+                            <!-- Inside delete.html -->
+                            <form action="/deletefile/" method="post">
+                                <div class="form-group">
+                                    <label for="file_path_delete">File Path:</label>
+                                    <input type="text" class="form-control" name="file_path" required>
+                                </div>
+                                <button type="submit" class="btn btn-danger">Delete</button>
+                            </form>
+                        <p class="mt-2">{{ delete_message }}</p>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+    <!-- Include Bootstrap JS and jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

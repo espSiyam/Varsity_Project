@@ -1,13 +1,10 @@
-from fastapi import FastAPI, HTTPException, File, UploadFile, Form 
+from fastapi import FastAPI, HTTPException, File, UploadFile, Form
+from fastapi.responses import HTMLResponse
 import dropbox
-from pydantic import BaseModel
 import os
-import logging
-import requests
-import subprocess 
-
-# Initialize logging
-logging.basicConfig(level=logging.DEBUG)
+from jinja2 import Environment, FileSystemLoader
+from starlette.responses import RedirectResponse
+from starlette.templating import Jinja2Templates
 
 app = FastAPI()
 
@@ -16,7 +13,7 @@ DROPBOX_APP_KEY = "6xi2mof9qvqtxjz"
 DROPBOX_APP_SECRET = "lm0npp4haji7u8r"
 
 # Initialize Dropbox OAuth2 flow
-flow = dropbox.DropboxOAuth2FlowNoRedirect(DROPBOX_APP_KEY, DROPBOX_APP_SECRET, "http://localhost:5000/auth/callback")
+flow = dropbox.DropboxOAuth2FlowNoRedirect(DROPBOX_APP_KEY, DROPBOX_APP_SECRET, "http://localhost:8000/auth/callback")
 
 # Store the access token obtained from the first step
 stored_access_token = None
@@ -26,7 +23,32 @@ def get_current_access_token():
     return stored_access_token
 
 # Manually set the access token here
-stored_access_token = "sl.BmQB_9RAY9i3ibgNf3uhEs_WO6065ULnkh02TGsANo9k6x9WHp4e0dlDVwKGGbZbQVGv1MvRxjATYqA6Jdo-fBalUomoMo39W3YC1dUr3b04JqclWpu01D8hB2w8mQvvcU_6Vepkk6WH_Sb2NtVLJtY"
+stored_access_token = "sl.BmWo75-19C_ep35eQ1btSLxytEhHqGJgvNMcJdeGQMAxXjLVM014sYrDC1BhGOlHjN1y3_lGcbX03pd5aHDUSAW6DnpfpWN3gjYmwuFFbJlmqhzxmLFuYvqTwTrY8eGnjlXBJIDqBx9Q7JTiiuGu1TI"
+
+
+# Jinja2 template environment setup
+templates_env = Environment(loader=FileSystemLoader("templates"))
+templates = {
+    "homepage": templates_env.get_template("homepage.html"),
+    # "upload": templates_env.get_template("upload.html"),
+    # "copy": templates_env.get_template("copy.html"),
+    # "move": templates_env.get_template("move.html"),
+    # "rename": templates_env.get_template("rename.html"),
+    # "delete": templates_env.get_template("delete.html"),
+}
+
+# Function to render HTML templates
+def render_template(template_name, **kwargs):
+    template = templates.get(template_name)
+    if template:
+        return HTMLResponse(content=template.render(**kwargs))
+    else:
+        raise HTTPException(status_code=500, detail=f"Template {template_name} not found")
+
+# Function to render the homepage
+@app.get("/", response_class=HTMLResponse)
+async def homepage():
+    return render_template("homepage")
 
 
 # Function to upload a file to Dropbox
@@ -118,52 +140,6 @@ async def rename_file(file_path: str = Form(...), new_name: str = Form(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"File rename operation failed: {str(e)}")
 
-
-# # Model for the request body
-# class ConvertToPDFRequest(BaseModel):
-#     url: str
-#     file_path: str
-#     output_pdf_path: str
-
-# # Function to convert a document file to PDF using an external service
-# @app.post("/convertpdf/")
-# async def convert_to_pdf(request_body: ConvertToPDFRequest):
-#     global stored_access_token
-#     try:
-#         if stored_access_token is None:
-#             raise HTTPException(status_code=401, detail="Access token not available. Please set the access token.")
-
-#         # Define the path to save the downloaded source document using the file_path from the request
-#         source_document_path = request_body.file_path  # Use the file_path from the request
-
-#         # Define the path to save the converted PDF using the output_pdf_path from the request
-#         output_pdf_path = request_body.output_pdf_path  # Use the output_pdf_path from the request
-
-#         # Download the source document from the URL provided in the request
-#         response = requests.get(request_body.url)
-#         if response.status_code != 200:
-#             return {"message": "Failed to download the source document"}
-
-#         # Save the downloaded document to the specified temporary file path
-#         with open(source_document_path, "wb") as temp_file:
-#             temp_file.write(response.content)
-
-#         # Convert the downloaded document to PDF using an external tool or service
-#         # Example: Use unoconv to convert to PDF (make sure unoconv is installed)
-#         conversion_command = ["unoconv", "--format", "pdf", "-o", output_pdf_path, source_document_path]
-#         subprocess.run(conversion_command, check=True)
-
-#         # Upload the converted PDF to Dropbox using the file path provided in the request
-#         dbx = dropbox.Dropbox(stored_access_token)
-#         with open(output_pdf_path, "rb") as pdf_file:
-#             dbx.files_upload(pdf_file.read(), request_body.file_path)
-
-#         return {"message": f"File '{request_body.file_path}' converted to PDF and uploaded to Dropbox"}
-#     except Exception as e:
-#         return {"message": f"File conversion to PDF and upload failed: {str(e)}"}
-    
-# # url: https://www.dropbox.com/scl/fi/jskx2ahmfbrvgb3qqoo0w/goals.docx?rlkey=0la4uwmkj6uidqk2jbrj0ajv6&dl=0
-# # 
-# # # filepath = /uploads/goals.docx
-
-	
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
